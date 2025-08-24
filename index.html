@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #222222;
+            --tg-theme-button-color: #40a7e3;
+            --tg-theme-button-text-color: #ffffff;
+            --primary-color: #40a7e3;
+            --secondary-color: #f0f0f0;
+            --accent-color: #34c759;
+            --danger-color: #ff3b30;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 16px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--secondary-color);
+            margin-bottom: 20px;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+
+        .profile-info h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .profile-info p {
+            margin: 5px 0 0;
+            color: #666;
+        }
+
+        .card {
+            background-color: var(--secondary-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .balance {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--tg-theme-text-color);
+        }
+
+        .btn-success {
+            background-color: var(--accent-color);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        .referral-section {
+            margin: 20px 0;
+        }
+
+        .referral-code {
+            background-color: var(--secondary-color);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin: 10px 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transaction-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--secondary-color);
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+        }
+
+        .deposit {
+            color: var(--accent-color);
+        }
+
+        .withdraw {
+            color: var(--danger-color);
+        }
+
+        .tab-container {
+            display: flex;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--secondary-color);
+        }
+
+        .tab {
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Admin Panel Styles */
+        .admin-section {
+            margin: 20px 0;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--secondary-color);
+        }
+
+        .admin-table th {
+            background-color: var(--secondary-color);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background-color: #ffcc00;
+            color: #000;
+        }
+
+        .status-approved {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .status-rejected {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>আমার টেলিগ্রাম অ্যাপ</h1>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab active" data-tab="dashboard">ড্যাশবোর্ড</div>
+            <div class="tab" data-tab="transactions">লেনদেন</div>
+            <div class="tab" data-tab="referral">রেফারেল</div>
+            <div class="tab" data-tab="admin" id="adminTab" style="display: none;">অ্যাডমিন</div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard">
+            <div class="profile">
+                <img src="" alt="Profile" class="profile-img" id="profileImage">
+                <div class="profile-info">
+                    <h2 id="userName">ব্যবহারকারীর নাম</h2>
+                    <p id="userTelegramId">Telegram ID: </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="text-align: center;">বর্তমান ব্যালেন্স</div>
+                <div class="balance" id="userBalance">৳ 0.00</div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-success" id="depositBtn">ডিপোজিট</button>
+                <button class="btn btn-danger" id="withdrawBtn">উত্তোলন</button>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span>সর্বশেষ লেনদেন</span>
+                    <a href="#" onclick="showTab('transactions')">সব দেখুন</a>
+                </div>
+                <ul class="transaction-list" id="recentTransactions">
+                    <li class="transaction-item">
+                        <div class="transaction-info">কোন লেনদেন নেই</div>
+                        <div class="transaction-amount">৳ 0.00</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div class="tab-content" id="transactions">
+            <h2>লেনদেনের ইতিহাস</h2>
+            <ul class="transaction-list" id="allTransactions">
+                <li class="transaction-item">
+                    <div class="transaction-info">কোন লেনদেন নেই</div>
+                    <div class="transaction-amount">৳ 0.00</div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Referral Tab -->
+        <div class="tab-content" id="referral">
+            <h2>রেফারেল সিস্টেম</h2>
+            <div class="card">
+                <p>আপনার রেফারেল লিংক শেয়ার করুন এবং পুরস্কার পান</p>
+                <div class="referral-code" id="referralCode">ABCD1234</div>
+                <button class="btn" id="shareBtn">লিংক শেয়ার করুন</button>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span>রেফারেল করা ব্যবহারকারী</span>
+                    <span id="referralCount">0</span>
+                </div>
+                <ul class="transaction-list" id="referralList">
+                    <li class="transaction-item">কোন রেফারেল নেই</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Admin Tab -->
+        <div class="tab-content" id="admin">
+            <h2>অ্যাডমিন প্যানেল</h2>
+
+            <div class="admin-section">
+                <h3>ব্যবহারকারী ব্যবস্থাপনা</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>নাম</th>
+                            <th>Telegram ID</th>
+                            <th>ব্যালেন্স</th>
+                            <th>অবস্থা</th>
+                            <th>কর্ম</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userManagementList">
+                        <tr>
+                            <td>ডেটা লোড হচ্ছে...</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="admin-section">
+                <h3>লেনদেন অনুমোদন</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ব্যবহারকারী</th>
+                            <th>পরিমাণ</th>
+                            <th>ধরন</th>
+                            <th>অবস্থা</th>
+                            <th>কর্ম</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionApprovalList">
+                        <tr>
+                            <td>ডেটা লোড হচ্ছে...</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // টেলিগ্রাম ওয়েব অ্যাপ ইনিশিয়ালাইজেশন
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+        
+        // ব্যবহারকারীর তথ্য
+        let user = {
+            id: tg.initDataUnsafe.user?.id || Math.floor(Math.random() * 1000000),
+            firstName: tg.initDataUnsafe.user?.first_name || "ব্যবহারকারী",
+            lastName: tg.initDataUnsafe.user?.last_name || "",
+            photoUrl: tg.initDataUnsafe.user?.photo_url || "https://via.placeholder.com/100",
+            balance: 1000.50,
+            referralCode: generateReferralCode(),
+            isAdmin: tg.initDataUnsafe.user?.id === 123456789 // উদাহরণ: নির্দিষ্ট আইডি অ্যাডমিন
+        };
+
+        // ডেমো ডেটা
+        let transactions = [
+            { id: 1, type: 'deposit', amount: 500.00, status: 'approved', date: '2023-10-15' },
+            { id: 2, type: 'withdraw', amount: 200.00, status: 'pending', date: '2023-10-18' },
+            { id: 3, type: 'deposit', amount: 1000.00, status: 'approved', date: '2023-10-20' }
+        ];
+
+        let referrals = [
+            { id: 1, name: 'রফিকুল ইসলাম', date: '2023-10-12', earned: 50.00 },
+            { id: 2, name: 'সুমাইয়া আক্তার', date: '2023-10-14', earned: 50.00 }
+        ];
+
+        let allUsers = [
+            { id: 1, name: 'আব্দুল্লাহ আল মামুন', telegramId: 123456, balance: 1500.00, isBlocked: false },
+            { id: 2, name: 'আয়শা সিদ্দিকা', telegramId: 654321, balance: 2500.00, isBlocked: false },
+            { id: user.id, name: user.firstName + " " + user.lastName, telegramId: user.id, balance: user.balance, isBlocked: false }
+        ];
+
+        // পেজ লোড হওয়ার পরে UI আপডেট
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUserInfo();
+            updateTransactions();
+            updateReferralInfo();
+            setupEventListeners();
+            
+            // অ্যাডমিন হলে অ্যাডমিন ট্যাব দেখান
+            if (user.isAdmin) {
+                document.getElementById('adminTab').style.display = 'block';
+                updateAdminPanel();
+            }
+        });
+
+        // ব্যবহারকারীর তথ্য আপডেট
+        function updateUserInfo() {
+            document.getElementById('profileImage').src = user.photoUrl;
+            document.getElementById('userName').textContent = user.firstName + " " + user.lastName;
+            document.getElementById('userTelegramId').textContent = "Telegram ID: " + user.id;
+            document.getElementById('userBalance').textContent = "৳ " + user.balance.toFixed(2);
+            document.getElementById('referralCode').textContent = user.referralCode;
+            document.getElementById('referralCount').textContent = referrals.length;
+        }
+
+        // লেনদেনের তালিকা আপডেট
+        function updateTransactions() {
+            const recentList = document.getElementById('recentTransactions');
+            const allList = document.getElementById('allTransactions');
+            
+            recentList.innerHTML = '';
+            allList.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                recentList.innerHTML = '<li class="transaction-item"><div class="transaction-info">কোন লেনদেন নেই</div><div class="transaction-amount">৳ 0.00</div></li>';
+                allList.innerHTML = '<li class="transaction-item"><div class="transaction-info">কোন লেনদেন নেই</div><div class="transaction-amount">৳ 0.00</div></li>';
+                return;
+            }
+            
+            // সর্বশেষ ৩টি লেনদেন দেখান
+            const recentTransactions = transactions.slice(0, 3);
+            recentTransactions.forEach(txn => {
+                const li = document.createElement('li');
+                li.className = 'transaction-item';
+                
+                const typeText = txn.type === 'deposit' ? 'ডিপোজিট' : 'উত্তোলন';
+                const statusClass = txn.status === 'pending' ? 'status-pending' : 
+                                  (txn.status === 'approved' ? 'status-approved' : 'status-rejected');
+                
+                li.innerHTML = `
+                    <div class="transaction-info">
+                        ${typeText}
+                        <div class="status-badge ${statusClass}">${txn.status}</div>
+                    </div>
+                    <div class="transaction-amount ${txn.type}">৳ ${txn.amount.toFixed(2)}</div>
+                `;
+                
+                recentList.appendChild(li);
+            });
+            
+            // সব লেনদেন দেখান
+            transactions.forEach(txn => {
+                const li = document.createElement('li');
+                li.className = 'transaction-item';
+                
+                const typeText = txn.type === 'deposit' ? 'ডিপোজিট' : 'উত্তোলন';
+                const statusClass = txn.status === 'pending' ? 'status-pending' : 
+                                  (txn.status === 'approved' ? 'status-approved' : 'status-rejected');
+                
+                li.innerHTML = `
+                    <div class="transaction-info">
+                        ${typeText} - ${txn.date}
+                        <div class="status-badge ${statusClass}">${txn.status}</div>
+                    </div>
+                    <div class="transaction-amount ${txn.type}">৳ ${txn.amount.toFixed(2)}</div>
+                `;
+                
+                allList.appendChild(li);
+            });
+        }
+
+        // রেফারেল তথ্য আপডেট
+        function updateReferralInfo() {
+            const referralList = document.getElementById('referralList');
+            referralList.innerHTML = '';
+            
+            if (referrals.length === 0) {
+                referralList.innerHTML = '<li class="transaction-item">কোন রেফারেল নেই</li>';
+                return;
+            }
+            
+            referrals.forEach(ref => {
+                const li = document.createElement('li');
+                li.className = 'transaction-item';
+                li.innerHTML = `
+                    <div class="transaction-info">${ref.name}</div>
+                    <div class="transaction-amount deposit">৳ ${ref.earned.toFixed(2)}</div>
+                `;
+                referralList.appendChild(li);
+            });
+        }
+
+        // অ্যাডমিন প্যানেল আপডেট
+        function updateAdminPanel() {
+            const userList = document.getElementById('userManagementList');
+            const txnList = document.getElementById('transactionApprovalList');
+            
+            userList.innerHTML = '';
+            txnList.innerHTML = '';
+            
+            // ব্যবহারকারী তালিকা
+            allUsers.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${u.name}</td>
+                    <td>${u.telegramId}</td>
+                    <td>৳ ${u.balance.toFixed(2)}</td>
+                    <td>${u.isBlocked ? 'ব্লক' : 'সক্রিয়'}</td>
+                    <td>
+                        <button class="action-btn" style="background: ${u.isBlocked ? 'var(--accent-color)' : 'var(--danger-color)'}; color: white;">
+                            ${u.isBlocked ? 'আনব্লক' : 'ব্লক'}
+                        </button>
+                    </td>
+                `;
+                userList.appendChild(tr);
+            });
+            
+            // লেনদেন অনুমোদন তালিকা
+            transactions.filter(t => t.status === 'pending').forEach(txn => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.firstName}</td>
+                    <td>৳ ${txn.amount.toFixed(2)}</td>
+                    <td>${txn.type === 'deposit' ? 'ডিপোজিট' : 'উত্তোলন'}</td>
+                    <td><div class="status-badge status-pending">${txn.status}</div></td>
+                    <td>
+                        <button class="action-btn" style="background: var(--accent-color); color: white;">অনুমোদন</button>
+                        <button class="action-btn" style="background: var(--danger-color); color: white;">প্রত্যাখ্যান</button>
+                    </td>
+                `;
+                txnList.appendChild(tr);
+            });
+        }
+
+        // ইভেন্ট লিসেনার সেটআপ
+        function setupEventListeners() {
+            // ট্যাব পরিবর্তন
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    showTab(tab.getAttribute('data-tab'));
+                });
+            });
+            
+            // ডিপোজিট বাটন
+            document.getElementById('depositBtn').addEventListener('click', () => {
+                const amount = prompt("ডিপোজিটের পরিমাণ লিখুন:");
+                if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                    const depositAmount = parseFloat(amount);
+                    tg.showPopup({
+                        title: "ডিপোজিট রিকোয়েস্ট",
+                        message: `আপনি ${depositAmount.toFixed(2)} টাকা ডিপোজিট করতে চান?`,
+                        buttons: [
+                            {id: 'confirm', type: 'ok', text: 'নিশ্চিত করুন'},
+                            {type: 'cancel'}
+                        ]
+                    }, function(buttonId) {
+                        if (buttonId === 'confirm') {
+                            // ডিপোজিট রিকোয়েস্ট যোগ করুন
+                            transactions.unshift({
+                                id: transactions.length + 1,
+                                type: 'deposit',
+                                amount: depositAmount,
+                                status: 'pending',
+                                date: new Date().toISOString().split('T')[0]
+                            });
+                            
+                            updateTransactions();
+                            tg.showAlert("ডিপোজিট রিকোয়েস্ট সাবমিট হয়েছে। অনুমোদনের জন্য অপেক্ষা করুন।");
+                        }
+                    });
+                } else {
+                    tg.showAlert("দয়া করে একটি বৈধ পরিমাণ লিখুন।");
+                }
+            });
+            
+            // উত্তোলন বাটন
+            document.getElementById('withdrawBtn').addEventListener('click', () => {
+                const amount = prompt("উত্তোলনের পরিমাণ লিখুন:");
+                if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                    const withdrawAmount = parseFloat(amount);
+                    if (withdrawAmount > user.balance) {
+                        tg.showAlert("আপনার পর্যাপ্ত ব্যালেন্স নেই।");
+                        return;
+                    }
+                    
+                    tg.showPopup({
+                        title: "উত্তোলন রিকোয়েস্ট",
+                        message: `আপনি ${withdrawAmount.toFixed(2)} টাকা উত্তোলন করতে চান?`,
+                        buttons: [
+                            {id: 'confirm', type: 'ok', text: 'নিশ্চিত করুন'},
+                            {type: 'cancel'}
+                        ]
+                    }, function(buttonId) {
+                        if (buttonId === 'confirm') {
+                            // উত্তোলন রিকোয়েস্ট যোগ করুন
+                            transactions.unshift({
+                                id: transactions.length + 1,
+                                type: 'withdraw',
+                                amount: withdrawAmount,
+                                status: 'pending',
+                                date: new Date().toISOString().split('T')[0]
+                            });
+                            
+                            updateTransactions();
+                            tg.showAlert("উত্তোলন রিকোয়েস্ট সাবমিট হয়েছে। অনুমোদনের জন্য অপেক্ষা করুন।");
+                        }
+                    });
+                } else {
+                    tg.showAlert("দয়া করে একটি বৈধ পরিমাণ লিখুন।");
+                }
+            });
+            
+            // শেয়ার বাটন
+            document.getElementById('shareBtn').addEventListener('click', () => {
+                const shareText = `আমার রেফারেল লিংক: https://t.me/your_bot?start=${user.referralCode}`;
+                tg.showPopup({
+                    title: "রেফারেল লিংক",
+                    message: shareText,
+                    buttons: [
+                        {id: 'share', type: 'ok', text: 'শেয়ার করুন'},
+                        {type: 'cancel'}
+                    ]
+                }, function(buttonId) {
+                    if (buttonId === 'share') {
+                        tg.showAlert("লিংক কপি হয়েছে! এখন শেয়ার করুন।");
+                    }
+                });
+            });
+        }
+
+        // ট্যাব দেখান
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // রেফারেল কোড জেনারেটর
+        function generateReferralCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+    </script>
+</body>
+</html>
